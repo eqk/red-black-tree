@@ -21,9 +21,9 @@ template <typename T>
 			parent(parent), data(data), color(color), left(left), right(right){};
 			~RBNode()
 			{
-			while (left)
+			if (left)
 				delete left;
-			while (right)
+			if (right)
 				delete right;
 			}
 			RBNode * grandparent()
@@ -55,7 +55,7 @@ template <typename T>
 			}
 			bool is_leaf() const { return color == black && left == nullptr && right == nullptr; }
 		};
-		class RBLeaf : private RBNode
+		class RBLeaf : public RBNode
 		{
 		public:
 			RBLeaf(RBNode * parent) : RBNode(parent, T(), black, nullptr, nullptr){}
@@ -82,7 +82,7 @@ template <typename T>
 		}
 		void rotate_right(RBNode * n)
 		{
-			struct node * pivot = n->left;
+			RBNode * pivot = n->left;
 			pivot->parent = n->parent;
 			if (n->parent != nullptr)
 			{
@@ -114,17 +114,64 @@ template <typename T>
 			}
 			r->left = new RBLeaf(r);
 			r->right = new RBLeaf(r);
-			if (r->parent == nullptr) // добавленный - корень
-			{
-				r->color = RBNode::black;
-				return;
-			}
-			if (n->parent->color == RBNode::black) // предок добавленного - черный, всё норм
-			{
-				return;
-			}
-			
+			insert_case1(r);
 		}
+		void insert_case1(RBNode * n) // добавленный узел - корень
+		{
+			if (n->parent == nullptr)
+				n->color = RBNode::black;
+			else
+				insert_case2(n);
+		}
+		void insert_case2(RBNode * n)
+		{
+			if (n->parent->color == RBNode::black)
+				return;
+			else
+				insert_case3(n);
+		}
+		void insert_case3(RBNode * n)
+		{
+			RBNode * u = n->grandparent(), * g;
+
+			if ((u != nullptr) && (u->color == RBNode::red) && (n->parent->color == RBNode::red)) {
+				n->parent->color = RBNode::black;
+				u->color = RBNode::black;
+				g = n->grandparent();
+				g->color = RBNode::red;
+				insert_case1(g);
+			}
+			else {
+				insert_case4(n);
+			}
+		}
+		void insert_case4(RBNode * n)
+		{
+			RBNode * g = n->grandparent();
+
+			if ((n == n->parent->right) && (n->parent == g->left)) {
+				rotate_left(n->parent);
+				n = n->left;
+			}
+			else if ((n == n->parent->left) && (n->parent == g->right)) {
+				rotate_right(n->parent);
+				n = n->right;
+			}
+			insert_case5(n);
+		}
+		void insert_case5(RBNode * n)
+		{
+			RBNode * g = n->grandparent();
+			n->parent->color = RBNode::black;
+			g->color = RBNode::red;
+			if ((n == n->parent->left) && (n->parent == g->left)) {
+				rotate_right(g);
+			}
+			else {
+				rotate_left(g);
+			}
+		}
+
 	public:
 		RBTree(): root(nullptr){};
 		~RBTree()
@@ -134,7 +181,7 @@ template <typename T>
 		bool empty() const { return root == nullptr;	}
 		void insert(T x) //TODO: return iter
 		{
-
+			push_(root, x);
 		}
 	};
 //};
