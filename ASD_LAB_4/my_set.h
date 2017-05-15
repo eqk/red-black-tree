@@ -3,6 +3,8 @@
 
 //#define nullptr 0
 
+#include <iterator>
+
 template <typename T>
 //class MySet
 //{
@@ -59,6 +61,34 @@ template <typename T>
 		{
 		public:
 			RBLeaf(RBNode * parent) : RBNode(parent, T(), black, nullptr, nullptr){}
+		};
+		class RBTIterator : public std::iterator<std::bidirectional_iterator_tag, T>
+		{
+			friend class RBNode;
+			RBNode * p;
+		public:
+			RBTIterator(RBNode * p) : p(p) {};
+			RBTIterator(const RBTIterator & other) : p(other.p) {};
+			bool operator!=(const RBTIterator & other) const
+			{
+				return p != other.p;
+			}
+			bool operator==(const RBTIterator & other) const
+			{
+				return p == other.p;
+			}
+			RBTIterator & operator++()
+			{
+
+			}
+			RBTIterator & operator--()
+			{
+
+			}
+			T & operator*()
+			{
+				return p->data;
+			}
 		};
 		friend class RBNode;
 		RBNode * root;
@@ -172,7 +202,33 @@ template <typename T>
 			}
 		}
 
+		int _size = 0;
+		RBNode * left()
+		{
+			RBNode * p = root;
+			while (p->left && !p->left->is_leaf()) {
+				p = p->left;
+			}
+			return p;
+		}
+		RBNode * right()
+		{
+			RBNode * p = root;
+			while (p->right && !p->right->is_leaf()) {
+				p = p->right;
+			}
+			return p;
+		}
 	public:
+		typedef RBTIterator iterator;
+		iterator begin()
+		{
+			return RBTIterator(left());
+		}
+		iterator end()
+		{
+			return RBTIterator(right());
+		}
 		RBTree(): root(nullptr){};
 		~RBTree()
 		{
@@ -182,6 +238,11 @@ template <typename T>
 		void insert(T x) //TODO: return iter
 		{
 			push_(root, x);
+			++_size;
+		}
+		int size() const
+		{
+			return _size;
 		}
 	};
 //};
